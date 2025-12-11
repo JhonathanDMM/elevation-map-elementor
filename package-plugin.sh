@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script para empaquetar el plugin Elevation Map Elementor Widget
-# Uso: bash package-plugin.sh
+# Uso: bash package-plugin.sh (ejecutar desde el directorio del plugin)
 
 echo "🎁 Empaquetando Elevation Map Elementor Widget..."
 
@@ -9,13 +9,7 @@ echo "🎁 Empaquetando Elevation Map Elementor Widget..."
 PLUGIN_NAME="elevation-map-elementor"
 
 # Obtener versión automáticamente del archivo principal
-# Primero intentar desde el directorio actual
-if [ -f "$PLUGIN_NAME.php" ]; then
-    VERSION=$(grep -i "^ \* Version:" "$PLUGIN_NAME.php" | awk '{print $3}')
-else
-    # Si no está aquí, buscar en el subdirectorio (cuando se ejecuta desde el padre)
-    VERSION=$(grep -i "^ \* Version:" "$PLUGIN_NAME/$PLUGIN_NAME.php" | awk '{print $3}')
-fi
+VERSION=$(grep -i "^ \* Version:" "$PLUGIN_NAME.php" | awk '{print $3}')
 
 # Si no se encuentra la versión, usar una por defecto
 if [ -z "$VERSION" ]; then
@@ -27,53 +21,45 @@ fi
 
 OUTPUT_NAME="${PLUGIN_NAME}-v${VERSION}.zip"
 
-# Crear archivo temporal para excluir
-EXCLUDE_FILE=$(mktemp)
-
-# Archivos y carpetas a excluir
-cat > "$EXCLUDE_FILE" << EOF
-*.git*
-.DS_Store
-Thumbs.db
-*.log
-node_modules/
-package-plugin.sh
-.env
-*.bak
-*.tmp
-EOF
-
 # Ir al directorio padre
-cd "$(dirname "$0")/.."
+cd ..
 
 echo "📦 Creando archivo ZIP..."
 
-# Crear el ZIP excluyendo archivos innecesarios
-if command -v zip &> /dev/null; then
-    zip -r "$OUTPUT_NAME" "$PLUGIN_NAME" \
-        -x@"$EXCLUDE_FILE" \
-        -x "*.git*" \
-        -x "*/.DS_Store" \
-        -x "*/package-plugin.sh"
+# Eliminar ZIP anterior si existe
+rm -f "$OUTPUT_NAME"
+
+# Crear el ZIP correctamente, excluyendo archivos innecesarios
+zip -r "$OUTPUT_NAME" "$PLUGIN_NAME" \
+    -x "*/\.git/*" \
+    -x "*/\.gitignore" \
+    -x "*/.DS_Store" \
+    -x "*/package-plugin.sh" \
+    -x "*/publish-version.sh" \
+    -x "*/create-release.sh" \
+    -x "*/CHANGELOG.md" \
+    -x "*/STRUCTURE.md" \
+    -x "*/INSTALL.md" \
+    -x "*/GUIA-VSCODE-GITHUB.md" \
+    -x "*/ACTUALIZACIONES-GITHUB.md" \
+    -x "*/RESUMEN-ACTUALIZACIONES.md" \
+    -x "*/INICIO-RAPIDO.md" \
+    -x "*/node_modules/*" \
+    -x "*/.env" \
+    -x "*/\.backup" \
+    -x "*/includes/plugin-update-checker/*" \
+    -x "*/*.js.backup"
     
-    echo "✅ Plugin empaquetado exitosamente: $OUTPUT_NAME"
-    echo "📊 Tamaño del archivo:"
-    du -h "$OUTPUT_NAME"
-    echo ""
-    echo "📍 Ubicación: $(pwd)/$OUTPUT_NAME"
-    echo ""
-    echo "🚀 Siguiente paso:"
-    echo "   1. Ve a tu WordPress Admin → Plugins → Añadir nuevo"
-    echo "   2. Haz clic en 'Subir plugin'"
-    echo "   3. Selecciona el archivo: $OUTPUT_NAME"
-    echo "   4. Instala y activa"
-else
-    echo "❌ Error: comando 'zip' no encontrado"
-    echo "   Comprime manualmente la carpeta '$PLUGIN_NAME' en un archivo .zip"
-fi
-
-# Limpiar
-rm -f "$EXCLUDE_FILE"
-
+echo "✅ Plugin empaquetado exitosamente: $OUTPUT_NAME"
+echo "📊 Tamaño del archivo:"
+du -h "$OUTPUT_NAME"
+echo ""
+echo "📍 Ubicación: $(pwd)/$OUTPUT_NAME"
+echo ""
+echo "🚀 Siguiente paso:"
+echo "   1. Ve a tu WordPress Admin → Plugins → Añadir nuevo"
+echo "   2. Haz clic en 'Subir plugin'"
+echo "   3. Selecciona el archivo: $OUTPUT_NAME"
+echo "   4. Instala y activa"
 echo ""
 echo "✨ ¡Listo!"

@@ -3,7 +3,7 @@
  * Plugin Name: Elevation Map Elementor Widget
  * Plugin URI: https://kromahost.com
  * Description: Widget de Elementor para mostrar mapas con analisis de altimetria (GPX/KML/KMZ). Incluye efectos glass morphism y diseno moderno personalizable.
- * Version: 2.3.1
+ * Version: 2.3.2
  * Author: Kroma Hosting
  * Author URI: https://kromahost.com
  * License: GPL v2 or later
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-define('ELEVATION_MAP_VERSION', '2.3.1');
+define('ELEVATION_MAP_VERSION', '2.3.2');
 define('ELEVATION_MAP_PATH', plugin_dir_path(__FILE__));
 define('ELEVATION_MAP_URL', plugin_dir_url(__FILE__));
 
