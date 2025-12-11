@@ -7,7 +7,24 @@ echo "🎁 Empaquetando Elevation Map Elementor Widget..."
 
 # Nombre del plugin
 PLUGIN_NAME="elevation-map-elementor"
-VERSION="1.0.0"
+
+# Obtener versión automáticamente del archivo principal
+# Primero intentar desde el directorio actual
+if [ -f "$PLUGIN_NAME.php" ]; then
+    VERSION=$(grep -i "^ \* Version:" "$PLUGIN_NAME.php" | awk '{print $3}')
+else
+    # Si no está aquí, buscar en el subdirectorio (cuando se ejecuta desde el padre)
+    VERSION=$(grep -i "^ \* Version:" "$PLUGIN_NAME/$PLUGIN_NAME.php" | awk '{print $3}')
+fi
+
+# Si no se encuentra la versión, usar una por defecto
+if [ -z "$VERSION" ]; then
+    VERSION="1.0.0"
+    echo "⚠️  No se pudo detectar la versión, usando $VERSION por defecto"
+else
+    echo "📌 Versión detectada: $VERSION"
+fi
+
 OUTPUT_NAME="${PLUGIN_NAME}-v${VERSION}.zip"
 
 # Crear archivo temporal para excluir
