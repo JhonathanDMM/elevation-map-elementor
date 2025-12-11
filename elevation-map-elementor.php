@@ -60,7 +60,7 @@ final class Elevation_Map_Elementor {
         use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
         
         $myUpdateChecker = PucFactory::buildUpdateChecker(
-            'https://github.com/TU_USUARIO/elevation-map-elementor/', // IMPORTANTE: Reemplaza TU_USUARIO con tu usuario de GitHub
+            'https://github.com/JhonathanDMM/elevation-map-elementor/',
             __FILE__,
             'elevation-map-elementor'
         );
