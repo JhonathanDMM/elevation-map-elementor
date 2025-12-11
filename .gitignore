@@ -1,0 +1,38 @@
+# .gitignore para WordPress Plugin
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# WordPress
+*.log
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build files
+*.backup
+node_modules/
+vendor/
+
+# Temporary files
+*.tmp
+*.temp
+puc.zip
+puc.tar.gz
+
+# Compiled files
+*.zip (excepto en releases)
+
+# Personal notes
+notes.txt
+TODO.md
