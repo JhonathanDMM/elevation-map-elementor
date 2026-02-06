@@ -1,7 +1,8 @@
 /**
- * Elevation Map Widget JavaScript v2.4.0
+ * Elevation Map Widget JavaScript v2.4.1
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
+ * Route selection controlled from Elementor editor (not public UI)
  */
 
 (function($) {
@@ -43,6 +44,7 @@
                 const elevationId = $wrapper.data('elevation-id');
                 const showMarkers = $wrapper.data('show-markers') !== 'no'; // Default: yes
                 const markerColor = $wrapper.data('marker-color') || '#ff3838';
+                const selectedRoute = parseInt($wrapper.data('selected-route') || '0');
                 
                 if (!trackUrl) {
                     console.warn('No track URL provided for widget:', widgetId);
@@ -57,9 +59,10 @@
                         demEndpoint: demEndpoint,
                         mapRouteColor: mapRouteColor,
                         chartLineColor: chartLineColor,
-                        chartFillColor: chartFil,
+                        chartFillColor: chartFillColor,
                         showMarkers: showMarkers,
-                        markerColor: markerColorlColor,
+                        markerColor: markerColor,
+                        selectedRoute: selectedRoute,
                         mapId: mapId,
                         elevationId: elevationId
                     });
@@ -81,7 +84,8 @@
                                         mapId: mapId,
                                         elevationId: elevationId,
                                         showMarkers: showMarkers,
-                                        markerColor: markerColor
+                                        markerColor: markerColor,
+                                        selectedRoute: selectedRoute
                                     });
                                 }
                             });
@@ -98,6 +102,13 @@
                                 chartFillColor: chartFillColor,
                                 mapId: mapId,
                                 elevationId: elevationId,
+                                showMarkers: showMarkers,
+                                markerColor: markerColor,
+                                selectedRoute: selectedRoute
+                            });
+                        }, 100);
+                    }
+                }
                                 showMarkers: showMarkers,
                                 markerColor: markerColor
                             });
@@ -185,63 +196,17 @@
                     // Store track data
                     self.trackData[settings.mapId] = data;
                     
-                    // If multiple routes exist, show selector
-                    if (data.routes.length > 1) {
-                        self.createRouteSelector($wrapper, data.routes, settings);
-                    }
+                    // Get selected route index from settings (default to 0)
+                    const selectedRouteIndex = settings.selectedRoute || 0;
                     
-                    // Load first route by default
-                    return self.loadRoute(0, data, map, settings, $wrapper, $loading);
+                    // Load selected route directly (no public selector)
+                    return self.loadRoute(selectedRouteIndex, data, map, settings, $wrapper, $loading);
                 })
                 .catch(err => {
                     console.error('Error loading track:', err);
                     $loading.removeClass('active');
                     alert('Error al cargar el mapa: ' + err.message);
                 });
-        },
-
-        createRouteSelector: function($wrapper, routes, settings) {
-            const self = this;
-            
-            // Create selector HTML
-            const selectorHtml = `
-                <div class="route-selector-wrapper">
-                    <label for="route-select-${settings.mapId}">
-                        <span class="route-icon">🛤️</span>
-                        Seleccionar Ruta:
-                    </label>
-                    <select id="route-select-${settings.mapId}" class="route-selector">
-                        ${routes.map((route, index) => `
-                            <option value="${index}">
-                                ${route.name || `Ruta ${index + 1}`} 
-                                ${route.distance ? `(${route.distance.toFixed(2)} km)` : ''}
-                            </option>
-                        `).join('')}
-                    </select>
-                </div>
-            `;
-            
-            // Insert before map
-            $wrapper.find('.elevation-map-container-wrapper').prepend(selectorHtml);
-            
-            // Handle route change
-            $(`#route-select-${settings.mapId}`).on('change', function() {
-                const routeIndex = parseInt($(this).val());
-                const $loading = $wrapper.find('.map-loading');
-                $loading.addClass('active');
-                
-                // Clear existing layers
-                self.maps[settings.mapId].eachLayer(function(layer) {
-                    if (layer instanceof L.Path || layer instanceof L.Marker) {
-                        if (!layer.options.attribution) { // Don't remove tile layer
-                            self.maps[settings.mapId].removeLayer(layer);
-                        }
-                    }
-                });
-                
-                // Load selected route
-                self.loadRoute(routeIndex, self.trackData[settings.mapId], self.maps[settings.mapId], settings, $wrapper, $loading);
-            });
         },
 
         loadRoute: function(routeIndex, trackData, map, settings, $wrapper, $loading) {

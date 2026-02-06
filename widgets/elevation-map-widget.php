@@ -213,6 +213,19 @@ class Elevation_Map_Widget extends \Elementor\Widget_Base {
             ]
         );
 
+        $this->add_control(
+            'selected_route',
+            [
+                'label' => esc_html__('Ruta a Mostrar', 'elevation-map-elementor'),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 0,
+                'max' => 50,
+                'step' => 1,
+                'default' => 0,
+                'description' => esc_html__('Índice de la ruta a mostrar cuando el archivo contiene múltiples rutas (0 = primera ruta)', 'elevation-map-elementor'),
+            ]
+        );
+
         $this->end_controls_section();
 
         // ========== STYLE TAB ==========
@@ -448,6 +461,7 @@ class Elevation_Map_Widget extends \Elementor\Widget_Base {
             'data-measurement-color' => esc_attr($settings['measurement_color'] ?? '#00a86b'),
             'data-marker-color' => esc_attr($settings['marker_color'] ?? '#ff3838'),
             'data-show-markers' => esc_attr($settings['show_markers'] ?? 'yes'),
+            'data-selected-route' => esc_attr($settings['selected_route'] ?? '0'),
             'data-map-id' => esc_attr($map_id),
             'data-elevation-id' => esc_attr($elevation_id),
         ];
