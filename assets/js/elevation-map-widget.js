@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.4.9
+ * Elevation Map Widget JavaScript v2.5.0
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -572,60 +572,67 @@
             
             // Define icon types based on name patterns
             if (nameLower.includes('km') || /^\d+\s*km/.test(nameLower)) {
-                // Kilometer markers - circular numbered
+                // Kilometer markers - show number
                 return {
                     type: 'km',
                     color: markerColor,
-                    icon: 'K',
-                    label: name
+                    fontAwesome: 'fa-location-dot',
+                    label: name,
+                    showNumber: true
                 };
             } else if (nameLower.includes('agua') || nameLower.includes('water')) {
                 // Water stations
                 return {
                     type: 'agua',
                     color: '#2196F3',
-                    icon: 'A',
-                    label: name
+                    fontAwesome: 'fa-droplet',
+                    label: name,
+                    showNumber: false
                 };
             } else if (nameLower.includes('gatorade') || nameLower.includes('bebida')) {
                 // Drink stations
                 return {
                     type: 'gatorade',
                     color: '#FF9800',
-                    icon: 'G',
-                    label: name
+                    fontAwesome: 'fa-bottle-water',
+                    label: name,
+                    showNumber: false
                 };
             } else if (nameLower.includes('start') || nameLower.includes('inicio')) {
                 // Start point
                 return {
                     type: 'start',
                     color: '#4CAF50',
-                    icon: 'S',
-                    label: name
+                    fontAwesome: 'fa-play',
+                    label: name,
+                    showNumber: false
                 };
             } else if (nameLower.includes('finish') || nameLower.includes('meta')) {
                 // Finish point
                 return {
                     type: 'finish',
                     color: '#F44336',
-                    icon: 'F',
-                    label: name
+                    fontAwesome: 'fa-flag-checkered',
+                    label: name,
+                    showNumber: false
                 };
             } else if (/^\d+m$|^\d+\s*m$/.test(nameLower)) {
                 // Distance markers (500m, 1000m, etc)
                 return {
                     type: 'distance',
                     color: '#9C27B0',
-                    icon: 'M',
-                    label: name
+                    fontAwesome: 'fa-map-pin',
+                    label: name,
+                    showNumber: false
                 };
             } else {
                 // Default marker
                 return {
                     type: 'default',
                     color: markerColor,
-                    icon: '•',
-                    label: name
+                    fontAwesome: 'fa-circle',
+                    label: name,
+                    showNumber: false
                 };
             }
         },
@@ -647,35 +654,40 @@
                 const iconConfig = self.getWaypointIcon(wp.name, settings.markerColor);
                 console.log(`Icon config for "${wp.name}":`, iconConfig);
                 
-                // Create marker based on type
-                const marker = L.circleMarker([wp.lat, wp.lon], {
-                    radius: iconConfig.type === 'km' ? 16 : 14,
-                    fillColor: iconConfig.color,
-                    color: '#ffffff',
-                    weight: 3,
-                    opacity: 1,
-                    fillOpacity: 1,
+                // Create HTML for divIcon with Font Awesome
+                const iconHtml = `
+                    <div class="custom-waypoint-marker" style="background-color: ${iconConfig.color};">
+                        ${iconConfig.showNumber 
+                            ? `<span class="marker-number">${index + 1}</span>` 
+                            : `<i class="fa-solid ${iconConfig.fontAwesome}"></i>`
+                        }
+                    </div>
+                `;
+                
+                // Create divIcon
+                const icon = L.divIcon({
+                    html: iconHtml,
+                    className: 'custom-marker-icon',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16]
+                });
+                
+                // Create marker with divIcon
+                const marker = L.marker([wp.lat, wp.lon], {
+                    icon: icon,
                     zIndexOffset: 1000
                 }).addTo(map);
                 
                 console.log(`Marker ${index + 1} added at:`, [wp.lat, wp.lon], marker);
                 
-                // Add permanent tooltip with icon/label
-                const tooltipContent = iconConfig.type === 'km' ? `${index + 1}` : iconConfig.icon;
-                console.log(`Tooltip content for "${wp.name}":`, tooltipContent);
-                
-                marker.bindTooltip(tooltipContent, {
-                    permanent: true,
-                    direction: 'center',
-                    className: 'waypoint-number-label',
-                    offset: [0, 0]
-                });
-                
                 // Add popup if waypoint has name or description
                 if (wp.name || wp.description) {
                     const popupContent = `
                         <div class="waypoint-popup">
-                            <div style="font-size: 24px; text-align: center; margin-bottom: 5px;">${iconConfig.icon}</div>
+                            <div style="font-size: 24px; text-align: center; margin-bottom: 5px;">
+                                <i class="fa-solid ${iconConfig.fontAwesome}" style="color: ${iconConfig.color};"></i>
+                            </div>
                             ${wp.name ? `<h4>${wp.name}</h4>` : ''}
                             ${wp.description ? `<p>${wp.description}</p>` : ''}
                         </div>

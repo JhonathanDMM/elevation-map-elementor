@@ -507,23 +507,41 @@
     stroke: rgba(0, 0, 0, 0.3) !important;
 }
 
-/* ===== CUSTOM WAYPOINT MARKERS (CircleMarkers) ===== */
-.waypoint-number-label {
+/* ===== CUSTOM WAYPOINT MARKERS WITH FONT AWESOME ===== */
+.custom-marker-icon {
     background: transparent !important;
     border: none !important;
-    box-shadow: none !important;
-    color: white !important;
-    font-weight: bold !important;
-    font-size: 18px !important;
-    text-align: center !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    line-height: 1 !important;
-    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8) !important;
+    z-index: 1000 !important;
 }
 
-.waypoint-number-label::before {
-    display: none !important;
+.custom-waypoint-marker {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 3px solid white !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.custom-waypoint-marker:hover {
+    transform: scale(1.15) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.custom-waypoint-marker i {
+    color: white !important;
+    font-size: 16px !important;
+}
+
+.custom-waypoint-marker .marker-number {
+    color: white !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
 }
 
 /* Waypoint Popup Styles */
