@@ -216,13 +216,22 @@ class Elevation_Map_Widget extends \Elementor\Widget_Base {
         $this->add_control(
             'selected_route',
             [
-                'label' => esc_html__('Ruta a Mostrar', 'elevation-map-elementor'),
-                'type' => \Elementor\Controls_Manager::NUMBER,
-                'min' => 0,
-                'max' => 50,
-                'step' => 1,
-                'default' => 0,
-                'description' => esc_html__('Índice de la ruta a mostrar cuando el archivo contiene múltiples rutas (0 = primera ruta)', 'elevation-map-elementor'),
+                'label' => esc_html__('Seleccionar Ruta', 'elevation-map-elementor'),
+                'type' => \Elementor\Controls_Manager::SELECT,
+                'options' => [
+                    '0' => esc_html__('Ruta 1 (primera ruta del archivo)', 'elevation-map-elementor'),
+                    '1' => esc_html__('Ruta 2', 'elevation-map-elementor'),
+                    '2' => esc_html__('Ruta 3', 'elevation-map-elementor'),
+                    '3' => esc_html__('Ruta 4', 'elevation-map-elementor'),
+                    '4' => esc_html__('Ruta 5', 'elevation-map-elementor'),
+                    '5' => esc_html__('Ruta 6', 'elevation-map-elementor'),
+                    '6' => esc_html__('Ruta 7', 'elevation-map-elementor'),
+                    '7' => esc_html__('Ruta 8', 'elevation-map-elementor'),
+                    '8' => esc_html__('Ruta 9', 'elevation-map-elementor'),
+                    '9' => esc_html__('Ruta 10', 'elevation-map-elementor'),
+                ],
+                'default' => '0',
+                'description' => esc_html__('Selecciona qué ruta mostrar si el archivo KML/KMZ contiene múltiples rutas. Si tu archivo tiene solo una ruta, deja en "Ruta 1".', 'elevation-map-elementor'),
             ]
         );
 
