@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.5.1
+ * Elevation Map Widget JavaScript v2.5.2
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -570,13 +570,23 @@
         getWaypointIcon: function(name, markerColor) {
             const nameLower = (name || '').toLowerCase();
             
+            // SVG paths for each icon type
+            const svgIcons = {
+                droplet: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>',
+                bottle: '<rect x="9" y="2" width="6" height="4" rx="1"/><path d="M8 6h8v12a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V6z"/><circle cx="12" cy="12" r="1.5"/>',
+                play: '<path d="M8 5v14l11-7z"/>',
+                flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>',
+                mapPin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+                locationDot: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="white"/>'
+            };
+            
             // Define icon types based on name patterns
             if (nameLower.includes('km') || /^\d+\s*km/.test(nameLower)) {
                 // Kilometer markers - show number
                 return {
                     type: 'km',
                     color: markerColor,
-                    fontAwesome: 'fa-location-dot',
+                    svgPath: svgIcons.locationDot,
                     label: name,
                     showNumber: true
                 };
@@ -585,7 +595,7 @@
                 return {
                     type: 'agua',
                     color: '#2196F3',
-                    fontAwesome: 'fa-droplet',
+                    svgPath: svgIcons.droplet,
                     label: name,
                     showNumber: false
                 };
@@ -594,7 +604,7 @@
                 return {
                     type: 'gatorade',
                     color: '#FF9800',
-                    fontAwesome: 'fa-bottle-water',
+                    svgPath: svgIcons.bottle,
                     label: name,
                     showNumber: false
                 };
@@ -603,7 +613,7 @@
                 return {
                     type: 'start',
                     color: '#4CAF50',
-                    fontAwesome: 'fa-play',
+                    svgPath: svgIcons.play,
                     label: name,
                     showNumber: false
                 };
@@ -612,7 +622,7 @@
                 return {
                     type: 'finish',
                     color: '#F44336',
-                    fontAwesome: 'fa-flag-checkered',
+                    svgPath: svgIcons.flag,
                     label: name,
                     showNumber: false
                 };
@@ -621,7 +631,7 @@
                 return {
                     type: 'distance',
                     color: '#9C27B0',
-                    fontAwesome: 'fa-map-pin',
+                    svgPath: svgIcons.mapPin,
                     label: name,
                     showNumber: false
                 };
@@ -630,7 +640,7 @@
                 return {
                     type: 'default',
                     color: markerColor,
-                    fontAwesome: 'fa-circle',
+                    svgPath: svgIcons.locationDot,
                     label: name,
                     showNumber: false
                 };
