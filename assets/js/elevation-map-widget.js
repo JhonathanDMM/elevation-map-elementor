@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.5.2
+ * Elevation Map Widget JavaScript v2.5.3
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -664,40 +664,50 @@
                 const iconConfig = self.getWaypointIcon(wp.name, settings.markerColor);
                 console.log(`Icon config for "${wp.name}":`, iconConfig);
                 
-                // Create HTML for divIcon with SVG icon
-                const iconHtml = `
-                    <div class="custom-waypoint-marker" style="background-color: ${iconConfig.color};">
-                        ${iconConfig.showNumber 
-                            ? `<span class="marker-number">${index + 1}</span>` 
-                            : `<svg viewBox="0 0 24 24" width="16" height="16" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${iconConfig.svgPath}</svg>`
-                        }
-                    </div>
-                `;
-                
-                // Create divIcon
-                const icon = L.divIcon({
-                    html: iconHtml,
-                    className: 'custom-marker-icon',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
-                    popupAnchor: [0, -16]
-                });
-                
-                // Create marker with divIcon
-                const marker = L.marker([wp.lat, wp.lon], {
-                    icon: icon,
+                // Create circleMarker (more reliable than divIcon)
+                const marker = L.circleMarker([wp.lat, wp.lon], {
+                    radius: 10,
+                    fillColor: iconConfig.color,
+                    fillOpacity: 1,
+                    color: '#ffffff',
+                    weight: 3,
                     zIndexOffset: 1000
                 }).addTo(map);
                 
                 console.log(`Marker ${index + 1} added at:`, [wp.lat, wp.lon], marker);
                 
+                // Add label if showNumber (for km markers)
+                if (iconConfig.showNumber) {
+                    const label = L.tooltip({
+                        permanent: true,
+                        direction: 'center',
+                        className: 'waypoint-number-label',
+                        offset: [0, 0]
+                    });
+                    label.setContent(`<strong>${index + 1}</strong>`);
+                    marker.bindTooltip(label);
+                } else {
+                    // Add icon letter for other types
+                    const iconLetter = iconConfig.type === 'agua' ? 'A' :
+                                     iconConfig.type === 'gatorade' ? 'G' :
+                                     iconConfig.type === 'start' ? 'S' :
+                                     iconConfig.type === 'finish' ? 'F' :
+                                     iconConfig.type === 'distance' ? 'M' : '•';
+                    
+                    const label = L.tooltip({
+                        permanent: true,
+                        direction: 'center',
+                        className: 'waypoint-icon-label',
+                        offset: [0, 0]
+                    });
+                    label.setContent(`<strong>${iconLetter}</strong>`);
+                    marker.bindTooltip(label);
+                }
+                
                 // Add popup if waypoint has name or description
                 if (wp.name || wp.description) {
                     const popupContent = `
                         <div class="waypoint-popup">
-                            <div style="font-size: 24px; text-align: center; margin-bottom: 5px;">
-                                <svg viewBox="0 0 24 24" width="32" height="32" fill="${iconConfig.color}" stroke="${iconConfig.color}" stroke-width="1.5">${iconConfig.svgPath}</svg>
-                            </div>
                             ${wp.name ? `<h4>${wp.name}</h4>` : ''}
                             ${wp.description ? `<p>${wp.description}</p>` : ''}
                         </div>

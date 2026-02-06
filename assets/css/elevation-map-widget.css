@@ -507,41 +507,26 @@
     stroke: rgba(0, 0, 0, 0.3) !important;
 }
 
-/* ===== CUSTOM WAYPOINT MARKERS WITH SVG ICONS ===== */
-.custom-marker-icon {
+/* ===== WAYPOINT MARKERS WITH LETTERS/NUMBERS ===== */
+.waypoint-number-label,
+.waypoint-icon-label {
     background: transparent !important;
     border: none !important;
-    z-index: 1000 !important;
-}
-
-.custom-waypoint-marker {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border: 3px solid white !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-}
-
-.custom-waypoint-marker:hover {
-    transform: scale(1.15) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-}
-
-.custom-waypoint-marker svg {
-    display: block !important;
-    flex-shrink: 0 !important;
-}
-
-.custom-waypoint-marker .marker-number {
+    box-shadow: none !important;
     color: white !important;
     font-weight: bold !important;
-    font-size: 14px !important;
+    font-size: 11px !important;
+    text-align: center !important;
     line-height: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    pointer-events: none !important;
+}
+
+.waypoint-number-label strong,
+.waypoint-icon-label strong {
+    color: white !important;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8) !important;
 }
 
 /* Waypoint Popup Styles */
