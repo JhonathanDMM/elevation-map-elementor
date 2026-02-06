@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.4.8
+ * Elevation Map Widget JavaScript v2.4.9
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -574,57 +574,57 @@
             if (nameLower.includes('km') || /^\d+\s*km/.test(nameLower)) {
                 // Kilometer markers - circular numbered
                 return {
-                    type: 'circle',
+                    type: 'km',
                     color: markerColor,
-                    icon: '🚩',
+                    icon: 'K',
                     label: name
                 };
             } else if (nameLower.includes('agua') || nameLower.includes('water')) {
                 // Water stations
                 return {
-                    type: 'icon',
+                    type: 'agua',
                     color: '#2196F3',
-                    icon: '💧',
+                    icon: 'A',
                     label: name
                 };
             } else if (nameLower.includes('gatorade') || nameLower.includes('bebida')) {
                 // Drink stations
                 return {
-                    type: 'icon',
+                    type: 'gatorade',
                     color: '#FF9800',
-                    icon: '🥤',
+                    icon: 'G',
                     label: name
                 };
             } else if (nameLower.includes('start') || nameLower.includes('inicio')) {
                 // Start point
                 return {
-                    type: 'icon',
+                    type: 'start',
                     color: '#4CAF50',
-                    icon: '🏁',
+                    icon: 'S',
                     label: name
                 };
             } else if (nameLower.includes('finish') || nameLower.includes('meta')) {
                 // Finish point
                 return {
-                    type: 'icon',
+                    type: 'finish',
                     color: '#F44336',
-                    icon: '🏁',
+                    icon: 'F',
                     label: name
                 };
             } else if (/^\d+m$|^\d+\s*m$/.test(nameLower)) {
                 // Distance markers (500m, 1000m, etc)
                 return {
-                    type: 'circle',
+                    type: 'distance',
                     color: '#9C27B0',
-                    icon: '📍',
+                    icon: 'M',
                     label: name
                 };
             } else {
                 // Default marker
                 return {
-                    type: 'circle',
+                    type: 'default',
                     color: markerColor,
-                    icon: '📍',
+                    icon: '•',
                     label: name
                 };
             }
@@ -645,10 +645,11 @@
                 
                 // Get icon configuration based on waypoint name
                 const iconConfig = self.getWaypointIcon(wp.name, settings.markerColor);
+                console.log(`Icon config for "${wp.name}":`, iconConfig);
                 
                 // Create marker based on type
                 const marker = L.circleMarker([wp.lat, wp.lon], {
-                    radius: iconConfig.type === 'icon' ? 14 : 16,
+                    radius: iconConfig.type === 'km' ? 16 : 14,
                     fillColor: iconConfig.color,
                     color: '#ffffff',
                     weight: 3,
@@ -660,7 +661,9 @@
                 console.log(`Marker ${index + 1} added at:`, [wp.lat, wp.lon], marker);
                 
                 // Add permanent tooltip with icon/label
-                const tooltipContent = iconConfig.type === 'icon' ? iconConfig.icon : `${index + 1}`;
+                const tooltipContent = iconConfig.type === 'km' ? `${index + 1}` : iconConfig.icon;
+                console.log(`Tooltip content for "${wp.name}":`, tooltipContent);
+                
                 marker.bindTooltip(tooltipContent, {
                     permanent: true,
                     direction: 'center',
