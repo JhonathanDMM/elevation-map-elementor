@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.4.7
+ * Elevation Map Widget JavaScript v2.4.8
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -564,6 +564,72 @@
             $summary.html(html);
         },
 
+        /**
+         * Get icon configuration based on waypoint name/type
+         */
+        getWaypointIcon: function(name, markerColor) {
+            const nameLower = (name || '').toLowerCase();
+            
+            // Define icon types based on name patterns
+            if (nameLower.includes('km') || /^\d+\s*km/.test(nameLower)) {
+                // Kilometer markers - circular numbered
+                return {
+                    type: 'circle',
+                    color: markerColor,
+                    icon: '🚩',
+                    label: name
+                };
+            } else if (nameLower.includes('agua') || nameLower.includes('water')) {
+                // Water stations
+                return {
+                    type: 'icon',
+                    color: '#2196F3',
+                    icon: '💧',
+                    label: name
+                };
+            } else if (nameLower.includes('gatorade') || nameLower.includes('bebida')) {
+                // Drink stations
+                return {
+                    type: 'icon',
+                    color: '#FF9800',
+                    icon: '🥤',
+                    label: name
+                };
+            } else if (nameLower.includes('start') || nameLower.includes('inicio')) {
+                // Start point
+                return {
+                    type: 'icon',
+                    color: '#4CAF50',
+                    icon: '🏁',
+                    label: name
+                };
+            } else if (nameLower.includes('finish') || nameLower.includes('meta')) {
+                // Finish point
+                return {
+                    type: 'icon',
+                    color: '#F44336',
+                    icon: '🏁',
+                    label: name
+                };
+            } else if (/^\d+m$|^\d+\s*m$/.test(nameLower)) {
+                // Distance markers (500m, 1000m, etc)
+                return {
+                    type: 'circle',
+                    color: '#9C27B0',
+                    icon: '📍',
+                    label: name
+                };
+            } else {
+                // Default marker
+                return {
+                    type: 'circle',
+                    color: markerColor,
+                    icon: '📍',
+                    label: name
+                };
+            }
+        },
+
         addWaypoints: function(map, waypoints, settings) {
             const self = this;
             console.log('addWaypoints called with', waypoints.length, 'waypoints');
@@ -577,10 +643,13 @@
             waypoints.forEach((wp, index) => {
                 console.log(`Creating waypoint ${index + 1}:`, wp);
                 
-                // Use L.circleMarker instead of divIcon for better reliability
+                // Get icon configuration based on waypoint name
+                const iconConfig = self.getWaypointIcon(wp.name, settings.markerColor);
+                
+                // Create marker based on type
                 const marker = L.circleMarker([wp.lat, wp.lon], {
-                    radius: 16,
-                    fillColor: settings.markerColor,
+                    radius: iconConfig.type === 'icon' ? 14 : 16,
+                    fillColor: iconConfig.color,
                     color: '#ffffff',
                     weight: 3,
                     opacity: 1,
@@ -590,8 +659,9 @@
                 
                 console.log(`Marker ${index + 1} added at:`, [wp.lat, wp.lon], marker);
                 
-                // Add permanent tooltip with number
-                marker.bindTooltip(`${index + 1}`, {
+                // Add permanent tooltip with icon/label
+                const tooltipContent = iconConfig.type === 'icon' ? iconConfig.icon : `${index + 1}`;
+                marker.bindTooltip(tooltipContent, {
                     permanent: true,
                     direction: 'center',
                     className: 'waypoint-number-label',
@@ -602,6 +672,7 @@
                 if (wp.name || wp.description) {
                     const popupContent = `
                         <div class="waypoint-popup">
+                            <div style="font-size: 24px; text-align: center; margin-bottom: 5px;">${iconConfig.icon}</div>
                             ${wp.name ? `<h4>${wp.name}</h4>` : ''}
                             ${wp.description ? `<p>${wp.description}</p>` : ''}
                         </div>

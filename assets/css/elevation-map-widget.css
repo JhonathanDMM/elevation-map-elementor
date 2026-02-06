@@ -514,11 +514,12 @@
     box-shadow: none !important;
     color: white !important;
     font-weight: bold !important;
-    font-size: 14px !important;
+    font-size: 18px !important;
     text-align: center !important;
     padding: 0 !important;
     margin: 0 !important;
     line-height: 1 !important;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8) !important;
 }
 
 .waypoint-number-label::before {
