@@ -507,42 +507,22 @@
     stroke: rgba(0, 0, 0, 0.3) !important;
 }
 
-/* ===== CUSTOM WAYPOINT MARKERS ===== */
-.custom-marker-icon {
+/* ===== CUSTOM WAYPOINT MARKERS (CircleMarkers) ===== */
+.waypoint-number-label {
     background: transparent !important;
     border: none !important;
-    z-index: 1000 !important;
-    pointer-events: auto !important;
-}
-
-.custom-waypoint-marker {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border: 3px solid white !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-    position: relative !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    z-index: 1000 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-.custom-waypoint-marker:hover {
-    transform: scale(1.2) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
-}
-
-.custom-waypoint-marker .marker-number {
+    box-shadow: none !important;
     color: white !important;
     font-weight: bold !important;
     font-size: 14px !important;
-    line-height: 1 !important;
     text-align: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+}
+
+.waypoint-number-label::before {
+    display: none !important;
 }
 
 /* Waypoint Popup Styles */

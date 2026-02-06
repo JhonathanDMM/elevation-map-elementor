@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.4.6
+ * Elevation Map Widget JavaScript v2.4.7
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -577,26 +577,26 @@
             waypoints.forEach((wp, index) => {
                 console.log(`Creating waypoint ${index + 1}:`, wp);
                 
-                // Create custom numbered marker
-                const markerHtml = `
-                    <div class="custom-waypoint-marker" style="background-color: ${settings.markerColor};">
-                        <span class="marker-number">${index + 1}</span>
-                    </div>
-                `;
-                
-                const icon = L.divIcon({
-                    html: markerHtml,
-                    className: 'custom-marker-icon',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16], // Center of the marker
-                    popupAnchor: [0, -16]
-                });
-                
-                const marker = L.marker([wp.lat, wp.lon], { 
-                    icon: icon,
-                    zIndexOffset: 1000  // Ensure markers are above other layers
+                // Use L.circleMarker instead of divIcon for better reliability
+                const marker = L.circleMarker([wp.lat, wp.lon], {
+                    radius: 16,
+                    fillColor: settings.markerColor,
+                    color: '#ffffff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 1,
+                    zIndexOffset: 1000
                 }).addTo(map);
+                
                 console.log(`Marker ${index + 1} added at:`, [wp.lat, wp.lon], marker);
+                
+                // Add permanent tooltip with number
+                marker.bindTooltip(`${index + 1}`, {
+                    permanent: true,
+                    direction: 'center',
+                    className: 'waypoint-number-label',
+                    offset: [0, 0]
+                });
                 
                 // Add popup if waypoint has name or description
                 if (wp.name || wp.description) {
