@@ -1,7 +1,7 @@
 /**
- * Elevation Map Widget JavaScript v2.5.3
+ * Elevation Map Widget JavaScript v2.6.0
  * Uses Leaflet for maps + Chart.js for elevation charts
- * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
+ * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors + Auto-filter waypoints by route proximity
  * Route selection controlled from Elementor editor (not public UI)
  */
 
@@ -237,8 +237,16 @@
                     });
                     
                     if (settings.showMarkers && trackData.waypoints.length > 0) {
-                        console.log('Adding waypoints to map...');
-                        self.addWaypoints(map, trackData.waypoints, settings);
+                        console.log('Filtering waypoints for selected route...');
+                        // Filter waypoints to only show those near the selected route (within 100m)
+                        const filteredWaypoints = self.filterWaypointsByRoute(
+                            trackData.waypoints, 
+                            route.geojson, 
+                            100 // 100 meters threshold
+                        );
+                        
+                        console.log('Adding filtered waypoints to map...');
+                        self.addWaypoints(map, filteredWaypoints, settings);
                     } else {
                         console.warn('Waypoints NOT added. showMarkers:', settings.showMarkers, 'count:', trackData.waypoints.length);
                     }
@@ -645,6 +653,102 @@
                     showNumber: false
                 };
             }
+        },
+
+        /**
+         * Calculate minimum distance from a point to a line (route)
+         * Returns distance in meters
+         */
+        distanceToRoute: function(point, routeCoords) {
+            let minDistance = Infinity;
+            
+            // Calculate distance to each segment of the route
+            for (let i = 0; i < routeCoords.length - 1; i++) {
+                const segmentStart = L.latLng(routeCoords[i][1], routeCoords[i][0]);
+                const segmentEnd = L.latLng(routeCoords[i + 1][1], routeCoords[i + 1][0]);
+                const waypoint = L.latLng(point.lat, point.lon);
+                
+                // Distance to segment
+                const distance = this.distanceToSegment(waypoint, segmentStart, segmentEnd);
+                minDistance = Math.min(minDistance, distance);
+            }
+            
+            return minDistance;
+        },
+
+        /**
+         * Calculate distance from point to line segment
+         */
+        distanceToSegment: function(point, segStart, segEnd) {
+            const x = point.lat;
+            const y = point.lng;
+            const x1 = segStart.lat;
+            const y1 = segStart.lng;
+            const x2 = segEnd.lat;
+            const y2 = segEnd.lng;
+            
+            const A = x - x1;
+            const B = y - y1;
+            const C = x2 - x1;
+            const D = y2 - y1;
+            
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            let param = -1;
+            
+            if (lenSq !== 0) {
+                param = dot / lenSq;
+            }
+            
+            let xx, yy;
+            
+            if (param < 0) {
+                xx = x1;
+                yy = y1;
+            } else if (param > 1) {
+                xx = x2;
+                yy = y2;
+            } else {
+                xx = x1 + param * C;
+                yy = y1 + param * D;
+            }
+            
+            const dx = x - xx;
+            const dy = y - yy;
+            
+            // Return distance in meters
+            const pointOnSegment = L.latLng(xx, yy);
+            return point.distanceTo(pointOnSegment);
+        },
+
+        /**
+         * Filter waypoints to only show those near the selected route
+         * @param {Array} waypoints - All waypoints
+         * @param {Object} routeGeojson - The selected route's GeoJSON
+         * @param {number} maxDistance - Maximum distance in meters (default 100m)
+         */
+        filterWaypointsByRoute: function(waypoints, routeGeojson, maxDistance = 100) {
+            if (!routeGeojson || !routeGeojson.features || routeGeojson.features.length === 0) {
+                console.warn('No route data provided for filtering waypoints');
+                return waypoints; // Return all if no route
+            }
+            
+            const routeCoords = routeGeojson.features[0].geometry.coordinates;
+            const filteredWaypoints = [];
+            
+            waypoints.forEach((wp, index) => {
+                const distance = this.distanceToRoute(wp, routeCoords);
+                console.log(`Waypoint "${wp.name}" distance to route: ${distance.toFixed(2)}m`);
+                
+                if (distance <= maxDistance) {
+                    filteredWaypoints.push(wp);
+                } else {
+                    console.log(`  → Filtered out (too far: ${distance.toFixed(2)}m > ${maxDistance}m)`);
+                }
+            });
+            
+            console.log(`Filtered waypoints: ${filteredWaypoints.length}/${waypoints.length} within ${maxDistance}m of route`);
+            return filteredWaypoints;
         },
 
         addWaypoints: function(map, waypoints, settings) {
