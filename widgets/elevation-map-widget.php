@@ -200,6 +200,19 @@ class Elevation_Map_Widget extends \Elementor\Widget_Base {
             ]
         );
 
+        $this->add_control(
+            'show_markers',
+            [
+                'label' => esc_html__('Mostrar Marcadores', 'elevation-map-elementor'),
+                'type' => \Elementor\Controls_Manager::SWITCHER,
+                'label_on' => esc_html__('Sí', 'elevation-map-elementor'),
+                'label_off' => esc_html__('No', 'elevation-map-elementor'),
+                'return_value' => 'yes',
+                'default' => 'yes',
+                'description' => esc_html__('Muestra puntos de interés (waypoints) del archivo KML/KMZ', 'elevation-map-elementor'),
+            ]
+        );
+
         $this->end_controls_section();
 
         // ========== STYLE TAB ==========
@@ -267,6 +280,16 @@ class Elevation_Map_Widget extends \Elementor\Widget_Base {
                     '{{WRAPPER}} .custom-elevation-summary > div' => 'border-left-color: {{VALUE}};',
                 ],
                 'description' => esc_html__('Color de los valores numéricos y resaltados', 'elevation-map-elementor'),
+            ]
+        );
+
+        $this->add_control(
+            'marker_color',
+            [
+                'label' => esc_html__('Color de Marcadores', 'elevation-map-elementor'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#ff3838',
+                'description' => esc_html__('Color de los marcadores de puntos de interés', 'elevation-map-elementor'),
             ]
         );
 
@@ -423,6 +446,8 @@ class Elevation_Map_Widget extends \Elementor\Widget_Base {
             'data-chart-line-color' => esc_attr($settings['chart_line_color'] ?? '#00a86b'),
             'data-chart-fill-color' => esc_attr($settings['chart_fill_color'] ?? 'rgba(0, 168, 107, 0.2)'),
             'data-measurement-color' => esc_attr($settings['measurement_color'] ?? '#00a86b'),
+            'data-marker-color' => esc_attr($settings['marker_color'] ?? '#ff3838'),
+            'data-show-markers' => esc_attr($settings['show_markers'] ?? 'yes'),
             'data-map-id' => esc_attr($map_id),
             'data-elevation-id' => esc_attr($elevation_id),
         ];

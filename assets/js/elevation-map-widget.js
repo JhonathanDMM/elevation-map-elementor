@@ -1,7 +1,7 @@
 /**
- * Elevation Map Widget JavaScript v2.3.0
+ * Elevation Map Widget JavaScript v2.4.0
  * Uses Leaflet for maps + Chart.js for elevation charts
- * Features: Runner marker animation + Customizable colors + Auto-updates
+ * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  */
 
 (function($) {
@@ -14,6 +14,8 @@
         runners: {},
         runnerPulse: {},
         trackCoordinates: {},
+        trackData: {}, // Store all routes and waypoints
+        markerLayers: {}, // Store marker layers for each map
         
         init: function() {
             this.initWidgets();
@@ -39,6 +41,8 @@
                 const chartFillColor = $wrapper.data('chart-fill-color') || 'rgba(0, 168, 107, 0.2)';
                 const mapId = $wrapper.data('map-id');
                 const elevationId = $wrapper.data('elevation-id');
+                const showMarkers = $wrapper.data('show-markers') !== 'no'; // Default: yes
+                const markerColor = $wrapper.data('marker-color') || '#ff3838';
                 
                 if (!trackUrl) {
                     console.warn('No track URL provided for widget:', widgetId);
@@ -53,7 +57,9 @@
                         demEndpoint: demEndpoint,
                         mapRouteColor: mapRouteColor,
                         chartLineColor: chartLineColor,
-                        chartFillColor: chartFillColor,
+                        chartFillColor: chartFil,
+                        showMarkers: showMarkers,
+                        markerColor: markerColorlColor,
                         mapId: mapId,
                         elevationId: elevationId
                     });
@@ -73,7 +79,9 @@
                                         chartLineColor: chartLineColor,
                                         chartFillColor: chartFillColor,
                                         mapId: mapId,
-                                        elevationId: elevationId
+                                        elevationId: elevationId,
+                                        showMarkers: showMarkers,
+                                        markerColor: markerColor
                                     });
                                 }
                             });
@@ -89,7 +97,9 @@
                                 chartLineColor: chartLineColor,
                                 chartFillColor: chartFillColor,
                                 mapId: mapId,
-                                elevationId: elevationId
+                                elevationId: elevationId,
+                                showMarkers: showMarkers,
+                                markerColor: markerColor
                             });
                         }, 500);
                     }
@@ -167,10 +177,87 @@
             const self = this;
             const DEM_BATCH = 90;
             
-            // Load and process track
-            self.loadAndProcessTrack(settings.trackUrl, settings.demEndpoint, DEM_BATCH)
+            // Load track data with routes and waypoints
+            self.loadAndParseTrack(settings.trackUrl)
+                .then(data => {
+                    console.log('Track data loaded:', data);
+                    
+                    // Store track data
+                    self.trackData[settings.mapId] = data;
+                    
+                    // If multiple routes exist, show selector
+                    if (data.routes.length > 1) {
+                        self.createRouteSelector($wrapper, data.routes, settings);
+                    }
+                    
+                    // Load first route by default
+                    return self.loadRoute(0, data, map, settings, $wrapper, $loading);
+                })
+                .catch(err => {
+                    console.error('Error loading track:', err);
+                    $loading.removeClass('active');
+                    alert('Error al cargar el mapa: ' + err.message);
+                });
+        },
+
+        createRouteSelector: function($wrapper, routes, settings) {
+            const self = this;
+            
+            // Create selector HTML
+            const selectorHtml = `
+                <div class="route-selector-wrapper">
+                    <label for="route-select-${settings.mapId}">
+                        <span class="route-icon">🛤️</span>
+                        Seleccionar Ruta:
+                    </label>
+                    <select id="route-select-${settings.mapId}" class="route-selector">
+                        ${routes.map((route, index) => `
+                            <option value="${index}">
+                                ${route.name || `Ruta ${index + 1}`} 
+                                ${route.distance ? `(${route.distance.toFixed(2)} km)` : ''}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+            `;
+            
+            // Insert before map
+            $wrapper.find('.elevation-map-container-wrapper').prepend(selectorHtml);
+            
+            // Handle route change
+            $(`#route-select-${settings.mapId}`).on('change', function() {
+                const routeIndex = parseInt($(this).val());
+                const $loading = $wrapper.find('.map-loading');
+                $loading.addClass('active');
+                
+                // Clear existing layers
+                self.maps[settings.mapId].eachLayer(function(layer) {
+                    if (layer instanceof L.Path || layer instanceof L.Marker) {
+                        if (!layer.options.attribution) { // Don't remove tile layer
+                            self.maps[settings.mapId].removeLayer(layer);
+                        }
+                    }
+                });
+                
+                // Load selected route
+                self.loadRoute(routeIndex, self.trackData[settings.mapId], self.maps[settings.mapId], settings, $wrapper, $loading);
+            });
+        },
+
+        loadRoute: function(routeIndex, trackData, map, settings, $wrapper, $loading) {
+            const self = this;
+            const DEM_BATCH = 90;
+            const route = trackData.routes[routeIndex];
+            
+            if (!route) {
+                console.error('Route not found:', routeIndex);
+                return Promise.reject(new Error('Ruta no encontrada'));
+            }
+            
+            // Process track with elevation
+            return self.enrichWithElevation(route.geojson, settings.demEndpoint, DEM_BATCH)
                 .then(geojson => {
-                    console.log('Track loaded successfully');
+                    console.log('Route loaded successfully');
                     
                     // Add route to map
                     const layer = L.geoJSON(geojson, {
@@ -181,9 +268,21 @@
                         }
                     }).addTo(map);
                     
+                    // Add waypoints/markers if enabled
+                    if (settings.showMarkers && trackData.waypoints.length > 0) {
+                        self.addWaypoints(map, trackData.waypoints, settings);
+                    }
+                    
                     // Fit bounds
                     try {
-                        map.fitBounds(layer.getBounds(), { padding: [30, 30] });
+                        const bounds = layer.getBounds();
+                        // Extend bounds to include waypoints
+                        if (trackData.waypoints.length > 0) {
+                            trackData.waypoints.forEach(wp => {
+                                bounds.extend([wp.lat, wp.lon]);
+                            });
+                        }
+                        map.fitBounds(bounds, { padding: [30, 30] });
                     } catch(e) {
                         console.warn('Could not fit bounds:', e);
                     }
@@ -238,9 +337,9 @@
                     $loading.removeClass('active');
                 })
                 .catch(err => {
-                    console.error('Error loading track:', err);
+                    console.error('Error loading route:', err);
                     $loading.removeClass('active');
-                    alert('Error al cargar el mapa: ' + err.message);
+                    throw err;
                 });
         },
 
@@ -493,6 +592,130 @@
             }
             
             $summary.html(html);
+        },
+
+        addWaypoints: function(map, waypoints, settings) {
+            const self = this;
+            
+            // Remove existing markers
+            if (self.markerLayers[settings.mapId]) {
+                self.markerLayers[settings.mapId].forEach(marker => map.removeLayer(marker));
+            }
+            self.markerLayers[settings.mapId] = [];
+            
+            waypoints.forEach((wp, index) => {
+                // Create custom numbered marker
+                const markerHtml = `
+                    <div class="custom-waypoint-marker" style="background-color: ${settings.markerColor};">
+                        <span class="marker-number">${index + 1}</span>
+                    </div>
+                `;
+                
+                const icon = L.divIcon({
+                    html: markerHtml,
+                    className: 'custom-marker-icon',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32],
+                    popupAnchor: [0, -32]
+                });
+                
+                const marker = L.marker([wp.lat, wp.lon], { icon: icon }).addTo(map);
+                
+                // Add popup if waypoint has name or description
+                if (wp.name || wp.description) {
+                    const popupContent = `
+                        <div class="waypoint-popup">
+                            ${wp.name ? `<h4>${wp.name}</h4>` : ''}
+                            ${wp.description ? `<p>${wp.description}</p>` : ''}
+                        </div>
+                    `;
+                    marker.bindPopup(popupContent);
+                }
+                
+                self.markerLayers[settings.mapId].push(marker);
+            });
+        },
+
+        loadAndParseTrack: async function(trackUrl) {
+            const geojson = await this.loadAsGeoJSON(trackUrl);
+            return this.parseRoutesAndWaypoints(geojson);
+        },
+
+        parseRoutesAndWaypoints: function(geojson) {
+            const routes = [];
+            const waypoints = [];
+            
+            // Separate routes (LineString) from waypoints (Point)
+            const lines = [];
+            const points = [];
+            
+            (geojson.features || []).forEach(feature => {
+                if (!feature.geometry) return;
+                
+                if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+                    lines.push(feature);
+                } else if (feature.geometry.type === 'Point') {
+                    points.push(feature);
+                }
+            });
+            
+            // Process routes
+            if (lines.length === 0) {
+                throw new Error('No se encontraron rutas en el archivo');
+            }
+            
+            lines.forEach((feature, index) => {
+                const geom = feature.geometry;
+                let coords = [];
+                let name = feature.properties?.name || `Ruta ${index + 1}`;
+                
+                if (geom.type === 'LineString') {
+                    coords = geom.coordinates;
+                } else if (geom.type === 'MultiLineString') {
+                    // For MultiLineString, use the longest segment
+                    let longest = [];
+                    geom.coordinates.forEach(line => {
+                        if (line.length > longest.length) {
+                            longest = line;
+                        }
+                    });
+                    coords = longest;
+                }
+                
+                if (coords.length > 0) {
+                    const distance = this.calculateSegmentLength(coords);
+                    routes.push({
+                        name: name,
+                        distance: distance / 1000, // Convert to km
+                        geojson: {
+                            type: 'FeatureCollection',
+                            features: [{
+                                type: 'Feature',
+                                geometry: {
+                                    type: 'LineString',
+                                    coordinates: coords
+                                },
+                                properties: feature.properties || {}
+                            }]
+                        }
+                    });
+                }
+            });
+            
+            // Process waypoints/markers
+            points.forEach(feature => {
+                const coords = feature.geometry.coordinates;
+                waypoints.push({
+                    lon: coords[0],
+                    lat: coords[1],
+                    name: feature.properties?.name || '',
+                    description: feature.properties?.description || feature.properties?.desc || ''
+                });
+            });
+            
+            console.log(`Parsed ${routes.length} routes and ${waypoints.length} waypoints`);
+            
+            return { routes, waypoints };
         },
 
         loadAndProcessTrack: async function(trackUrl, demEndpoint, demBatch) {
