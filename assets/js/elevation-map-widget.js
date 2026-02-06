@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.5.0
+ * Elevation Map Widget JavaScript v2.5.1
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -654,12 +654,12 @@
                 const iconConfig = self.getWaypointIcon(wp.name, settings.markerColor);
                 console.log(`Icon config for "${wp.name}":`, iconConfig);
                 
-                // Create HTML for divIcon with Font Awesome
+                // Create HTML for divIcon with SVG icon
                 const iconHtml = `
                     <div class="custom-waypoint-marker" style="background-color: ${iconConfig.color};">
                         ${iconConfig.showNumber 
                             ? `<span class="marker-number">${index + 1}</span>` 
-                            : `<i class="fa-solid ${iconConfig.fontAwesome}"></i>`
+                            : `<svg viewBox="0 0 24 24" width="16" height="16" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${iconConfig.svgPath}</svg>`
                         }
                     </div>
                 `;
@@ -686,7 +686,7 @@
                     const popupContent = `
                         <div class="waypoint-popup">
                             <div style="font-size: 24px; text-align: center; margin-bottom: 5px;">
-                                <i class="fa-solid ${iconConfig.fontAwesome}" style="color: ${iconConfig.color};"></i>
+                                <svg viewBox="0 0 24 24" width="32" height="32" fill="${iconConfig.color}" stroke="${iconConfig.color}" stroke-width="1.5">${iconConfig.svgPath}</svg>
                             </div>
                             ${wp.name ? `<h4>${wp.name}</h4>` : ''}
                             ${wp.description ? `<p>${wp.description}</p>` : ''}
