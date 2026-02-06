@@ -511,6 +511,7 @@
 .custom-marker-icon {
     background: transparent !important;
     border: none !important;
+    z-index: 1000 !important;
 }
 
 .custom-waypoint-marker {
@@ -525,6 +526,7 @@
     position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
+    z-index: 1000;
 }
 
 .custom-waypoint-marker:hover {

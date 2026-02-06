@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.4.3
+ * Elevation Map Widget JavaScript v2.4.4
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -575,6 +575,8 @@
             self.markerLayers[settings.mapId] = [];
             
             waypoints.forEach((wp, index) => {
+                console.log(`Creating waypoint ${index + 1}:`, wp);
+                
                 // Create custom numbered marker
                 const markerHtml = `
                     <div class="custom-waypoint-marker" style="background-color: ${settings.markerColor};">
@@ -586,11 +588,12 @@
                     html: markerHtml,
                     className: 'custom-marker-icon',
                     iconSize: [32, 32],
-                    iconAnchor: [16, 32],
-                    popupAnchor: [0, -32]
+                    iconAnchor: [16, 16], // Center of the marker
+                    popupAnchor: [0, -16]
                 });
                 
                 const marker = L.marker([wp.lat, wp.lon], { icon: icon }).addTo(map);
+                console.log(`Marker ${index + 1} added at:`, [wp.lat, wp.lon], marker);
                 
                 // Add popup if waypoint has name or description
                 if (wp.name || wp.description) {
@@ -598,6 +601,16 @@
                         <div class="waypoint-popup">
                             ${wp.name ? `<h4>${wp.name}</h4>` : ''}
                             ${wp.description ? `<p>${wp.description}</p>` : ''}
+                        </div>
+                    `;
+                    marker.bindPopup(popupContent);
+                }
+                
+                self.markerLayers[settings.mapId].push(marker);
+            });
+            
+            console.log(`Total markers added to map: ${self.markerLayers[settings.mapId].length}`);
+        },
                         </div>
                     `;
                     marker.bindPopup(popupContent);
