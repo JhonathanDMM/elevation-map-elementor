@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.4.2
+ * Elevation Map Widget JavaScript v2.4.3
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -42,9 +42,11 @@
                 const chartFillColor = $wrapper.data('chart-fill-color') || 'rgba(0, 168, 107, 0.2)';
                 const mapId = $wrapper.data('map-id');
                 const elevationId = $wrapper.data('elevation-id');
-                const showMarkers = $wrapper.data('show-markers') !== 'no'; // Default: yes
+                const showMarkers = $wrapper.data('show-markers') === 'yes' || $wrapper.data('show-markers') === true; // Default: yes
                 const markerColor = $wrapper.data('marker-color') || '#ff3838';
                 const selectedRoute = parseInt($wrapper.data('selected-route') || '0');
+                
+                console.log('Widget settings:', { showMarkers, markerColor, selectedRoute });
                 
                 if (!trackUrl) {
                     console.warn('No track URL provided for widget:', widgetId);
@@ -228,8 +230,17 @@
                     }).addTo(map);
                     
                     // Add waypoints/markers if enabled
+                    console.log('Waypoints check:', {
+                        showMarkers: settings.showMarkers,
+                        waypointsCount: trackData.waypoints.length,
+                        waypoints: trackData.waypoints
+                    });
+                    
                     if (settings.showMarkers && trackData.waypoints.length > 0) {
+                        console.log('Adding waypoints to map...');
                         self.addWaypoints(map, trackData.waypoints, settings);
+                    } else {
+                        console.warn('Waypoints NOT added. showMarkers:', settings.showMarkers, 'count:', trackData.waypoints.length);
                     }
                     
                     // Fit bounds
@@ -555,6 +566,7 @@
 
         addWaypoints: function(map, waypoints, settings) {
             const self = this;
+            console.log('addWaypoints called with', waypoints.length, 'waypoints');
             
             // Remove existing markers
             if (self.markerLayers[settings.mapId]) {
