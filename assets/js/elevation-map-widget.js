@@ -1,5 +1,5 @@
 /**
- * Elevation Map Widget JavaScript v2.4.5
+ * Elevation Map Widget JavaScript v2.4.6
  * Uses Leaflet for maps + Chart.js for elevation charts
  * Features: Runner marker animation + Multiple routes + Waypoints/Markers + Customizable colors
  * Route selection controlled from Elementor editor (not public UI)
@@ -592,7 +592,10 @@
                     popupAnchor: [0, -16]
                 });
                 
-                const marker = L.marker([wp.lat, wp.lon], { icon: icon }).addTo(map);
+                const marker = L.marker([wp.lat, wp.lon], { 
+                    icon: icon,
+                    zIndexOffset: 1000  // Ensure markers are above other layers
+                }).addTo(map);
                 console.log(`Marker ${index + 1} added at:`, [wp.lat, wp.lon], marker);
                 
                 // Add popup if waypoint has name or description
@@ -610,6 +613,12 @@
             });
             
             console.log(`Total markers added to map: ${self.markerLayers[settings.mapId].length}`);
+            
+            // Force map refresh to ensure markers are rendered
+            setTimeout(() => {
+                map.invalidateSize();
+                console.log('Map refreshed after adding markers');
+            }, 100);
         },
 
         loadAndParseTrack: async function(trackUrl) {

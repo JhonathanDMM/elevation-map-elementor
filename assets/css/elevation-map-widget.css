@@ -512,33 +512,37 @@
     background: transparent !important;
     border: none !important;
     z-index: 1000 !important;
+    pointer-events: auto !important;
 }
 
 .custom-waypoint-marker {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 3px solid white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    position: relative;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 1000;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 3px solid white !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    position: relative !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    z-index: 1000 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .custom-waypoint-marker:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transform: scale(1.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
 .custom-waypoint-marker .marker-number {
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    line-height: 1;
+    color: white !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    text-align: center !important;
 }
 
 /* Waypoint Popup Styles */
